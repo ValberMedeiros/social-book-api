@@ -1,9 +1,9 @@
 package com.br.socialbookapi.resources;
 
 import com.br.socialbookapi.domain.Livro;
-import com.br.socialbookapi.repository.LivrosRepository;
+import com.br.socialbookapi.services.LivrosService;
+import com.br.socialbookapi.services.exceptions.LivroNaoEncontradoException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,11 +18,11 @@ import java.util.Optional;
 public class LivrosResource {
 
     @Autowired
-    private LivrosRepository livrosRepository;
+    private LivrosService livrosService;
 
     @GetMapping
     public ResponseEntity<List<Livro>> listar() {
-        List<Livro> livros = livrosRepository.findAll();
+        List<Livro> livros = livrosService.listar();
 
         if(livros.isEmpty()){
             return ResponseEntity.noContent().build();
@@ -33,8 +33,10 @@ public class LivrosResource {
 
     @GetMapping("/{id}")
     public ResponseEntity<?> buscar(@PathVariable Long id) {
-        Livro livroPesquisa = livrosRepository.findById(id).orElse(null);
-        if(livroPesquisa == null){
+        Livro livroPesquisa = null;
+        try {
+            livroPesquisa = livrosService.buscar(id);
+        } catch (LivroNaoEncontradoException e) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.status(HttpStatus.OK).body(livroPesquisa);
@@ -42,7 +44,7 @@ public class LivrosResource {
 
     @PostMapping
     public ResponseEntity<?> salvar(@RequestBody Livro livro) {
-        livro = livrosRepository.save(livro);
+        livro = livrosService.salvar(livro);
 
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}").buildAndExpand(livro.getId()).toUri();
@@ -53,15 +55,21 @@ public class LivrosResource {
     @PutMapping("/{id}")
     public ResponseEntity<?> atualizar(@RequestBody Livro livro, @PathVariable Long id) {
         livro.setId(id);
-        livrosRepository.save(livro);
+
+        try {
+            livrosService.atualizar(livro);
+        } catch (LivroNaoEncontradoException e) {
+            return ResponseEntity.notFound().build();
+        }
+
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id) {
         try {
-            livrosRepository.deleteById(id);
-        } catch (EmptyResultDataAccessException e) {
+            livrosService.deletar(id);
+        } catch (LivroNaoEncontradoException e) {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.noContent().build();

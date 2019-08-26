@@ -32,7 +32,7 @@ public class Livro implements Serializable {
     private String resumo;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)
-    @Transient
+    @OneToMany(mappedBy = "livro")
     private List<Comentario> comentarios;
 
     @JsonInclude(JsonInclude.Include.NON_NULL)

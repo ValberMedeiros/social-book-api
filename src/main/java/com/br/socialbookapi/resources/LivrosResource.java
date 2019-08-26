@@ -1,5 +1,6 @@
 package com.br.socialbookapi.resources;
 
+import com.br.socialbookapi.domain.Comentario;
 import com.br.socialbookapi.domain.Livro;
 import com.br.socialbookapi.services.LivrosService;
 import com.br.socialbookapi.services.exceptions.LivroNaoEncontradoException;
@@ -60,6 +61,23 @@ public class LivrosResource {
         livrosService.deletar(id);
 
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/comentarios")
+    public ResponseEntity<Void> adicionarComentario(@PathVariable Long id, @RequestBody Comentario comentario) {
+        livrosService.salvarComentario(id, comentario);
+
+        URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
+                .build().toUri();
+
+        return ResponseEntity.created(uri).build();
+    }
+
+    @GetMapping("/{id}/comentarios")
+    public ResponseEntity<List<Comentario>> listarComentarios(@PathVariable Long id) {
+        List<Comentario> comentarios = livrosService.listarComentarios(id);
+
+        return ResponseEntity.status(HttpStatus.OK).body(comentarios);
     }
 
 }

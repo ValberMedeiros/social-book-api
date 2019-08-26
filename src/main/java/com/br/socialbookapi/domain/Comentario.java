@@ -1,10 +1,15 @@
 package com.br.socialbookapi.domain;
 
-import javax.persistence.OneToMany;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import javax.persistence.*;
 import java.time.LocalDate;
 
+@Entity
 public class Comentario {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String texto;
@@ -12,6 +17,10 @@ public class Comentario {
     private String usuario;
 
     private LocalDate data;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "LIVRO_ID")
+    @JsonIgnore
+    private Livro livro;
 
     public Long getId() {
         return id;
@@ -43,5 +52,13 @@ public class Comentario {
 
     public void setData(LocalDate data) {
         this.data = data;
+    }
+
+    public Livro getLivro() {
+        return livro;
+    }
+
+    public void setLivro(Livro livro) {
+        this.livro = livro;
     }
 }
